@@ -30,16 +30,16 @@ func HandleFullRouter(w http.ResponseWriter, r *http.Request) {
 var TheMetaRouter = router_utils.MetaRouter{
 	router_utils.NODE_ROUTER: &router_utils.RouterImpl{
 		Port:    8083,
-		Servers: map[router_utils.SERVER_NUMBER]*router_utils.ServerImpl{},
+		Servers: map[router_utils.SERVER_NUMB]*router_utils.ServerImpl{},
 	},
 
 	router_utils.MEDIA_ROUTER: &router_utils.RouterImpl{
 		Port:    8081,
-		Servers: map[router_utils.SERVER_NUMBER]*router_utils.ServerImpl{},
+		Servers: map[router_utils.SERVER_NUMB]*router_utils.ServerImpl{},
 	},
 
 	router_utils.CHAT_ROUTER: &router_utils.RouterImpl{
 		Port:    8082,
-		Servers: map[router_utils.SERVER_NUMBER]*router_utils.ServerImpl{},
+		Servers: map[router_utils.SERVER_NUMB]*router_utils.ServerImpl{},
 	},
 }

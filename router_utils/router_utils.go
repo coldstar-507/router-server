@@ -2,8 +2,6 @@ package router_utils
 
 import (
 	"bytes"
-	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,25 +12,29 @@ import (
 )
 
 type ROUTER_TYPE = string
-type SERVER_NUMBER = string
+type SERVER_NUMB = uint16
+
+type Config struct {
+	SERVER_IP    string
+	SERVER_PLACE uint16
+	SERVER_TYPE  ROUTER_TYPE
+}
 
 type RouterImpl struct {
-	Port    int                           `json:"port"`
-	Servers map[SERVER_NUMBER]*ServerImpl `json:"servers"`
+	Port    int                         `json:"port"`
+	Servers map[SERVER_NUMB]*ServerImpl `json:"servers"`
 }
 
 type MetaRouter = map[ROUTER_TYPE]*RouterImpl
 
-func HexToUint16(hex string) uint16 {
-	i, _ := strconv.ParseInt(hex, 0, 0)
-	return uint16(i)
-}
+// func AtoUint16(a string) uint16 {
+// 	i, _ := strconv.Atoi(a)
+// 	return uint16(i)
+// }
 
-func Uint16ToHex(i uint16) string {
-	b := make([]byte, 2)
-	binary.BigEndian.PutUint16(b, i)
-	return "0x" + hex.EncodeToString(b)
-}
+// func Uint16ToI(i uint16) string {
+// 	return strconv.Itoa(int(i))
+// }
 
 const (
 	NODE_ROUTER  ROUTER_TYPE = "Node_Router"
@@ -41,22 +43,22 @@ const (
 )
 
 type ServerImpl struct {
-	RouterType ROUTER_TYPE     `json:"serverType"`
-	Place      SERVER_NUMBER   `json:"place"`
-	IP         string          `json:"ip"`
-	RelMedias  []SERVER_NUMBER `json:"relMedias"`
-	RelNodes   []SERVER_NUMBER `json:"relNodes"`
-	RelChats   []SERVER_NUMBER `json:"relChats"`
+	RouterType ROUTER_TYPE   `json:"serverType"`
+	Place      SERVER_NUMB   `json:"place"`
+	IP         string        `json:"ip"`
+	RelMedias  []SERVER_NUMB `json:"relMedias"`
+	RelNodes   []SERVER_NUMB `json:"relNodes"`
+	RelChats   []SERVER_NUMB `json:"relChats"`
 }
 
-func InitLocalServer(ip string, place SERVER_NUMBER, routerType ROUTER_TYPE) {
+func InitLocalServer(ip string, place SERVER_NUMB, routerType ROUTER_TYPE) {
 	LocalServer = &ServerImpl{
 		IP:         ip,
 		RouterType: routerType,
 		Place:      place,
-		RelMedias:  make([]SERVER_NUMBER, 0, 10),
-		RelNodes:   make([]SERVER_NUMBER, 0, 10),
-		RelChats:   make([]SERVER_NUMBER, 0, 10),
+		RelMedias:  make([]SERVER_NUMB, 0, 10),
+		RelNodes:   make([]SERVER_NUMB, 0, 10),
+		RelChats:   make([]SERVER_NUMB, 0, 10),
 	}
 }
 
@@ -107,21 +109,21 @@ func HandleScoreRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 type Router interface {
-	Host(place SERVER_NUMBER) string
+	Host(place SERVER_NUMB) string
 	GetPort() int
-	HostAndPort(place SERVER_NUMBER) string
-	GetServer(place SERVER_NUMBER) Server
-	RelativeMedias(place SERVER_NUMBER) []SERVER_NUMBER
-	RelativeNodes(place SERVER_NUMBER) []SERVER_NUMBER
-	RelativeChats(place SERVER_NUMBER) []SERVER_NUMBER
+	HostAndPort(place SERVER_NUMB) string
+	GetServer(place SERVER_NUMB) Server
+	RelativeMedias(place SERVER_NUMB) []SERVER_NUMB
+	RelativeNodes(place SERVER_NUMB) []SERVER_NUMB
+	RelativeChats(place SERVER_NUMB) []SERVER_NUMB
 }
 
 type Server interface {
 	Run()
 	Scores() *Scores
-	RelativeMedias() []SERVER_NUMBER
-	RelativeNodes() []SERVER_NUMBER
-	RelativeChats() []SERVER_NUMBER
+	RelativeMedias() []SERVER_NUMB
+	RelativeNodes() []SERVER_NUMB
+	RelativeChats() []SERVER_NUMB
 }
 
 func (lr *ServerImpl) Scores() *Scores {
@@ -154,13 +156,13 @@ func (lr *ServerImpl) fetchMetaRouter() {
 	url := "http://localhost:8084/full-router"
 	r, err := http.DefaultClient.Get(url)
 	if err != nil {
-		log.Printf("Server %s@%s error fetching meta router: %v\n",
+		log.Printf("Server %s@%d error fetching meta router: %v\n",
 			lr.IP, lr.Place, err)
 	}
 	defer r.Body.Close()
 	var m MetaRouter
 	if err = json.NewDecoder(r.Body).Decode(&m); err != nil {
-		log.Printf("Server %s@%s error decoding meta router: %v\n",
+		log.Printf("Server %s@%d error decoding meta router: %v\n",
 			lr.IP, lr.Place, err)
 	}
 	localMetaRouter = m
@@ -169,7 +171,7 @@ func (lr *ServerImpl) fetchMetaRouter() {
 func (lr *ServerImpl) pushServer() {
 	b, err := json.Marshal(lr)
 	if err != nil {
-		err = fmt.Errorf("Server %s@%s error marshalling server: %v",
+		err = fmt.Errorf("Server %s@%d error marshalling server: %v",
 			lr.IP, lr.Place, err)
 		panic(err)
 	}
@@ -177,13 +179,13 @@ func (lr *ServerImpl) pushServer() {
 	url := "http://localhost:8084/new-server"
 	r, err := http.DefaultClient.Post(url, "application/json", bytes.NewReader(b))
 	if err != nil {
-		err = fmt.Errorf("Server %s@%s error pushing to meta router: %v",
+		err = fmt.Errorf("Server %s@%d error pushing to meta router: %v",
 			lr.IP, lr.Place, err)
 		panic(err)
 	}
 	defer r.Body.Close()
 	if r.StatusCode != 200 {
-		err = fmt.Errorf("Server %s@%s status code is not 200: %d",
+		err = fmt.Errorf("Server %s@%d status code is not 200: %d",
 			lr.IP, lr.Place, r.StatusCode)
 		panic(err)
 	}
@@ -219,13 +221,13 @@ func (lr *ServerImpl) Run() {
 
 }
 
-func calculateRoutes(r *RouterImpl) []SERVER_NUMBER {
+func calculateRoutes(r *RouterImpl) []SERVER_NUMB {
 	type score struct {
-		id    SERVER_NUMBER
+		id    SERVER_NUMB
 		score int64
 	}
 
-	var futureScores = make(map[SERVER_NUMBER]<-chan *int64)
+	var futureScores = make(map[SERVER_NUMB]<-chan *int64)
 	for p := range r.Servers {
 		futureScores[p] = r.Ping(p)
 	}
@@ -241,7 +243,7 @@ func calculateRoutes(r *RouterImpl) []SERVER_NUMBER {
 		return scores[i].score < scores[j].score
 	})
 
-	res := make([]SERVER_NUMBER, len(scores))
+	res := make([]SERVER_NUMB, len(scores))
 	for i, x := range scores {
 		res[i] = x.id
 	}
@@ -249,7 +251,7 @@ func calculateRoutes(r *RouterImpl) []SERVER_NUMBER {
 	return res
 }
 
-func (r *RouterImpl) Host(place SERVER_NUMBER) string {
+func (r *RouterImpl) Host(place SERVER_NUMB) string {
 	return r.Servers[place].IP
 }
 
@@ -257,53 +259,53 @@ func (r *RouterImpl) GetPort() int {
 	return r.Port
 }
 
-func (r *RouterImpl) HostAndPort(place SERVER_NUMBER) string {
+func (r *RouterImpl) HostAndPort(place SERVER_NUMB) string {
 	return r.Servers[place].IP + ":" + strconv.Itoa(r.Port)
 }
 
-func (r *RouterImpl) GetServer(place SERVER_NUMBER) Server {
+func (r *RouterImpl) GetServer(place SERVER_NUMB) Server {
 	return r.Servers[place]
 }
 
-func (r *RouterImpl) RelativeMedias(place SERVER_NUMBER) []SERVER_NUMBER {
+func (r *RouterImpl) RelativeMedias(place SERVER_NUMB) []SERVER_NUMB {
 	return r.GetServer(place).RelativeMedias()
 
 }
 
-func (r *RouterImpl) RelativeNodes(place SERVER_NUMBER) []SERVER_NUMBER {
+func (r *RouterImpl) RelativeNodes(place SERVER_NUMB) []SERVER_NUMB {
 	return r.GetServer(place).RelativeNodes()
 }
 
-func (r *RouterImpl) RelativeChats(place SERVER_NUMBER) []SERVER_NUMBER {
+func (r *RouterImpl) RelativeChats(place SERVER_NUMB) []SERVER_NUMB {
 	return r.GetServer(place).RelativeChats()
 }
 
-func (s *ServerImpl) RelativeMedias() []SERVER_NUMBER {
+func (s *ServerImpl) RelativeMedias() []SERVER_NUMB {
 	return s.RelMedias
 }
 
-func (s *ServerImpl) RelativeNodes() []SERVER_NUMBER {
+func (s *ServerImpl) RelativeNodes() []SERVER_NUMB {
 	return s.RelNodes
 }
 
-func (s *ServerImpl) RelativeChats() []SERVER_NUMBER {
+func (s *ServerImpl) RelativeChats() []SERVER_NUMB {
 	return s.RelChats
 }
 
-func (r *RouterImpl) Ping(place SERVER_NUMBER) <-chan *int64 {
+func (r *RouterImpl) Ping(place SERVER_NUMB) <-chan *int64 {
 	ch := make(chan *int64)
 	go func() {
 		url := "http://" + r.HostAndPort(place) + "/ping"
 		t1 := time.Now()
 		if res, err := http.DefaultClient.Get(url); err != nil {
-			log.Printf("Ping(%s) error creating req: %v", place, err)
+			log.Printf("Ping(%d) error creating req: %v", place, err)
 			ch <- nil
 		} else if res.StatusCode != 200 {
-			log.Printf("Ping(%s) error: code isn't 200: %v", place, err)
+			log.Printf("Ping(%d) error: code isn't 200: %v", place, err)
 			ch <- nil
 		} else {
 			ms := time.Since(t1).Milliseconds()
-			log.Printf("Ping(%s) took %d ms", place, ms)
+			log.Printf("Ping(%d) took %d ms", place, ms)
 			ch <- &ms
 		}
 		close(ch)
@@ -312,12 +314,12 @@ func (r *RouterImpl) Ping(place SERVER_NUMBER) <-chan *int64 {
 }
 
 type Scores struct {
-	Medias []SERVER_NUMBER `json:"mediaPlaces"`
-	Nodes  []SERVER_NUMBER `json:"nodePlaces"`
-	Chats  []SERVER_NUMBER `json:"chatPlaces"`
+	Medias []SERVER_NUMB `json:"mediaPlaces"`
+	Nodes  []SERVER_NUMB `json:"nodePlaces"`
+	Chats  []SERVER_NUMB `json:"chatPlaces"`
 }
 
-func (r *RouterImpl) fetchScores(place SERVER_NUMBER) <-chan *Scores {
+func (r *RouterImpl) fetchScores(place SERVER_NUMB) <-chan *Scores {
 	addr := "http://" + r.HostAndPort(place) + "/route-scores"
 	ch := make(chan *Scores)
 	go func() {
