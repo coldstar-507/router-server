@@ -1,6 +1,14 @@
+github.com/coldstar-507/flatgen v0.0.0-20250618172028-64c185e0a453 h1:Jenex3+kX4GlsOVSuMOL7VWKhf6qQHUvH24GTQ8nmho=
+github.com/coldstar-507/flatgen v0.0.0-20250618172028-64c185e0a453/go.mod h1:JaYjlenuzWZYYiLk0/RqG9/XbWDtvVWsMWS0yZ4T9w8=
+github.com/coldstar-507/utils2 v0.0.0-20250618173934-37902640cae7 h1:87fbS7InMlQGiHclZgg2DwgzCx2mLsJu8ZvRsAIuBek=
+github.com/coldstar-507/utils2 v0.0.0-20250618173934-37902640cae7/go.mod h1:PRnUphwwKqUASOdA4UZemayI8jqvrag3SyCipt0fVaE=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/google/flatbuffers v25.2.10+incompatible h1:F3vclr7C3HpB1k9mxCGRMXq6FdUalZ6H/pNX4FP1v0Q=
+github.com/google/flatbuffers v25.2.10+incompatible/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 go.mongodb.org/mongo-driver v1.17.1 h1:Wic5cJIwJgSpBhe3lx3+/RybR5PiYRMpVFgO7cOHyIM=
 go.mongodb.org/mongo-driver v1.17.1/go.mod h1:wwWm/+BuOddhcq3n68LKRmgk2wXzmF6s0SFOa0GINL4=
+go.mongodb.org/mongo-driver v1.17.4 h1:jUorfmVzljjr0FLzYQsGP8cgN/qzzxlY9Vh0C9KFXVw=
+go.mongodb.org/mongo-driver v1.17.4/go.mod h1:Hy04i7O2kC4RS06ZrhPRqj/u4DTYkFDAAccj+rVKqgQ=

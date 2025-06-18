@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/coldstar-507/router/internal/the_router"
-	"github.com/coldstar-507/router/router_utils"
-	"github.com/coldstar-507/utils/http_utils"
-	"github.com/coldstar-507/utils/utils"
+	"github.com/coldstar-507/router-server/internal/the_router"
+	"github.com/coldstar-507/router-server/router_utils"
+	// "github.com/coldstar-507/utils/http_utils"
+	"github.com/coldstar-507/utils2"
 )
 
 func updateServerScores(r *router_utils.RouterImpl, s *router_utils.ServerImpl) {
@@ -39,7 +39,7 @@ func main() {
 	mux.HandleFunc("GET /full-router", the_router.HandleFullRouter)
 	mux.HandleFunc("GET /ping", router_utils.HandlePing)
 
-	server := http_utils.ApplyMiddlewares(mux, http_utils.StatusLogger)
+	server := utils2.ApplyMiddlewares(mux, utils2.StatusLogger)
 
 	go func() {
 		tck := time.NewTicker(time.Second * 70)
@@ -67,6 +67,6 @@ func main() {
 	addr := "0.0.0.0:8084"
 	log.Println("Starting http router-server on", addr)
 	err := http.ListenAndServe(addr, server)
-	utils.NonFatal(err, "http.ListenAndServe error")
+	utils2.NonFatal(err, "http.ListenAndServe error")
 
 }
