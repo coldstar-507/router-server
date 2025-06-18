@@ -1,4 +1,4 @@
-module github.com/coldstar-507/router
+module github.com/coldstar-507/router-server
 
 go 1.23.2
 
